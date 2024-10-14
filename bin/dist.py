@@ -1,4 +1,3 @@
-import argparse
 import os
 import subprocess
 from contextlib import contextmanager
@@ -31,25 +30,6 @@ def execute(*command_args: str):
     return subprocess.run(" ".join(command_args), shell=True, check=True)
 
 
-def run(args: argparse.Namespace):
-    """
-    Creates the distribution package for the project.
-    """
-    pypi_name = args.pypi_name
-    execute("poetry", "build", "--format", "wheel", "--no-interaction")
-    if args.publish:
-        execute("poetry", "config", f"repositories.{pypi_name}", args.pypi_repository)
-        execute("poetry", "config", f"repositories.{pypi_name}")
-        if args.pypi_token:
-            execute("poetry", "config", f"pypi-token.{pypi_name}", args.pypi_token)
-        execute("poetry", "publish", "--no-interaction", "-r", pypi_name)
-
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--publish", help="Publish the package to PyPI.", action="store_true", default=False)
-    parser.add_argument("--pypi-repository", help="The PyPI repository to upload the package to.")
-    parser.add_argument("--pypi-token", help="The PyPI token to authenticate the upload.")
-    parser.add_argument("--pypi-name", help="The name of the PyPI repository to upload the package to.", default="pypi")
     with curr_dir(project_folder):
-        run(parser.parse_args())
+        execute("poetry", "build", "--format", "wheel", "--no-interaction")
