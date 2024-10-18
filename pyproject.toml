@@ -1,8 +1,14 @@
 [tool.poetry]
 name = "rawjs2dict"
-version = "0.0.2"
+version = "0.0.3"
 description = "Library that converts raw JS scripts to Python dictionaries"
 authors = ["Blat AI"]
+include = [
+  # Install extra files into the rawjs2dict package
+  "./package*.json",
+  { path = "./node_modules/**/*", format = "wheel" },
+  # we don't want node_modules inside the sdist package
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
