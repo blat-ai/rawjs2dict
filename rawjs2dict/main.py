@@ -10,7 +10,7 @@ _acorn = _pm.require("acorn")
 
 
 def transform(script: str) -> dict[str, _typing.Any]:
-    ast = _acorn.parse(script)
+    ast = _acorn.parse(script, {"ecmaVersion": "latest"})
     cleaned_ast = _clean_ast(ast)
     output = _JSTransformer.transform(cleaned_ast)
     cleaned_output: dict[str, _typing.Any] = _clean_dict(output)
