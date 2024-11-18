@@ -8,7 +8,7 @@ ARG --global USERNAME = "blat"
 RUN apt-get update && apt-get install -y nodejs npm
 ENV NPM_PACKAGES="/usr/local/lib/node_modules"
 RUN mkdir -p $NPM_PACKAGES && chmod 777 $NPM_PACKAGES
-RUN npm install -g acorn
+RUN npm install -g acorn-loose
 
 RUN groupadd --gid 1001 $USERNAME
 RUN useradd --create-home --no-log-init --uid 1001 --gid 1001 $USERNAME
