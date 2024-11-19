@@ -6,7 +6,7 @@ from rawjs2dict.transformers import JSTransformer as _JSTransformer
 from rawjs2dict.utils import clean_dict as _clean_dict
 from rawjs2dict.utils import replace_pythonmonkey_nulls as _clean_ast
 
-_acorn = _pm.require("acorn")
+_acorn = _pm.require("acorn-loose")
 
 
 def transform(script: str) -> dict[str, _typing.Any]:

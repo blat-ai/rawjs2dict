@@ -80,7 +80,7 @@ def transform_literals(data: Any) -> Any:
     Transforms dictionaries where the key is LITERAL_VALUE to the value of the key.
     """
     if isinstance(data, dict):
-        if LITERAL_VALUE in data:
+        if LITERAL_VALUE in data and len(data) == 1:
             return data[LITERAL_VALUE]
         else:
             return {k: transform_literals(v) for k, v in data.items()}
