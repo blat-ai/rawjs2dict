@@ -1,8 +1,6 @@
 import json
 from typing import Any
 
-import pythonmonkey as pm
-
 LITERAL_VALUE = "*LITERAL_VALUE"
 
 
@@ -28,20 +26,6 @@ def clean_dict(ast: Any) -> Any:
     output = delete_empty_data(ast)
     output = transform_literals(output)
     return parse_json_strings(output)
-
-
-def replace_pythonmonkey_nulls(ast: Any) -> Any:
-    """
-    Recursively replace pm.NULL with None.
-    """
-    if isinstance(ast, dict):
-        return {k: replace_pythonmonkey_nulls(v) for k, v in ast.items()}
-    elif isinstance(ast, list):
-        return [replace_pythonmonkey_nulls(el) for el in ast]
-    elif ast == pm.null:
-        return None
-
-    return ast
 
 
 def parse_json_strings(data: Any) -> Any:

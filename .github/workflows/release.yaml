@@ -17,13 +17,8 @@ jobs:
     - name: Check version
       run: '[[ "$(poetry version -s)" == "${{ github.ref_name }}" ]]'
   dist:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-20.04
     needs: check-version
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-        os: [ 'ubuntu-20.04', 'macos-12', 'macos-14' ]
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.12
@@ -34,17 +29,6 @@ jobs:
       run: python bin/install.py
     - name: Build dist package
       run: python bin/dist.py
-    - name: Make the wheels we build also support lower versions of macOS
-      if: ${{ matrix.os == 'macos-12' || matrix.os == 'macos-14' }}
-      # Change the platform tag part of the wheel filename to `macosx_11_0_xxx` (means to support macOS 11.0 and above)
-      # See https://packaging.python.org/en/latest/specifications/binary-distribution-format/#file-format
-      # A wheel package file will only be selected by pip to install if the platform tag satisfies, regardless of whether the binary compatibility actually is.
-      # Otherwise, pip would fallback to compile from the source distribution.
-      run: |
-        cd ./dist/
-        for file in *.whl; do
-          mv "$file" "$(echo "$file" | sed -E 's/macosx_[0-9]+_[0-9]+/macosx_11_0/')";
-        done
     - name: Upload wheel as CI artifact
       uses: actions/upload-artifact@v3
       with:

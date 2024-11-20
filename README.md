@@ -39,15 +39,12 @@ Into something easy to parse like this:
 ```
 ## Getting Started
 ### Requirements
-* [nodejs](https://nodejs.org/)
-* [npm](https://www.npmjs.com/)
 * [python3](https://www.python.org)
 
 ### Installation
 Follow these steps to install rawjs2dict on your computer:
 
-1. Install NodeJS and npm following the [official docs](https://nodejs.org/en/download/package-manager/)
-2. Install rawjs2dict library
+1. Install rawjs2dict library
 ```bash
 pip install rawjs2dict
 ```

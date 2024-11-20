@@ -9,12 +9,12 @@ from rawjs2dict.utils import merge_dicts
 
 class JSTransformer:
     @staticmethod
-    def __get_transformer__(transformer_name: str) -> "BaseJSTransformer | None":
-        transformer: "BaseJSTransformer | None" = dict(inspect.getmembers(sys.modules[__name__], inspect.isclass)).get(
-            f"{transformer_name}Transformer", None
+    def __get_transformer__(transformer_name: str) -> "type[BaseJSTransformer] | None":
+        transformer = dict(inspect.getmembers(sys.modules[__name__], inspect.isclass)).get(
+            f"{transformer_name}Transformer"
         )
 
-        return transformer
+        return transformer if transformer and issubclass(transformer, BaseJSTransformer) else None
 
     @classmethod
     def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
