@@ -1,5 +1,4 @@
 import os
-import platform
 import subprocess
 from contextlib import contextmanager
 from os import path
@@ -35,15 +34,6 @@ def run():
     """
     Installs the dependencies of the project and the project itself.
     """
-    if platform.system() == "Darwin":
-        execute("brew", "install", "node")
-    elif platform.system() == "Linux":
-        execute("sudo", "apt-get", "update", "&&", "sudo", "apt-get", "install", "-y", "nodejs", "npm")
-    elif platform.system() == "Windows":
-        execute("choco", "install", "nodejs-lts")
-    else:
-        raise Exception(f"Unsupported OS: {platform.system()}")
-
     execute("pip", "install", "poetry")
     execute("poetry", "config", "virtualenvs.create", "false")
     execute("poetry", "install")
