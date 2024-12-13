@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rawjs2dict"
-version = "0.0.6"
+version = "0.0.7"
 description = "Library that converts raw JS scripts to Python dictionaries"
 authors = ["Blat AI"]
 
