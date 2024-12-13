@@ -34,12 +34,12 @@ class BaseJSTransformer(ABC):
         data = ast[cls.field]
         name = cls.__get_name__(ast)
 
+        output: dict[str, Any] = {}
         if isinstance(data, list):
-            output: dict[str, Any] = {}
             for statement in data:
                 result = JSTransformer.transform(statement)
                 output = merge_dicts(output, result)
-        else:
+        elif isinstance(data, dict):
             output = JSTransformer.transform(data)
 
         return {name: output} if name else output
@@ -234,3 +234,11 @@ class WithStatementTransformer(BaseJSTransformer):
 
 class ProgramTransformer(BaseJSTransformer):
     field = "body"
+
+
+class ReturnStatementTransformer(BaseJSTransformer):
+    field = "argument"
+
+    @classmethod
+    def __get_name__(cls, ast: dict[str, Any]) -> str:
+        return "return"
