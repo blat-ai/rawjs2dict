@@ -23,26 +23,34 @@ class JSTransformer:
 
 
 class BaseJSTransformer(ABC):
-    field: str = ""
+    fields: list[str] = []
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
         return ""
 
     @classmethod
-    def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
-        data = ast[cls.field]
-        name = cls.__get_name__(ast)
-
+    def __transform_single_field__(cls, ast: dict[str, Any], field: str) -> dict[str, Any]:
         output: dict[str, Any] = {}
-        if isinstance(data, list):
-            for statement in data:
-                result = JSTransformer.transform(statement)
-                output = merge_dicts(output, result)
-        elif isinstance(data, dict):
-            output = JSTransformer.transform(data)
+        name = cls.__get_name__(ast)
+        if field in ast:
+            data = ast[field]
+            if isinstance(data, list):
+                for statement in data:
+                    result = JSTransformer.transform(statement)
+                    output = merge_dicts(output, result)
+            elif isinstance(data, dict):
+                output = JSTransformer.transform(data)
 
         return {name: output} if name else output
+
+    @classmethod
+    def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
+        output: dict[str, Any] = {}
+        for field in cls.fields:
+            output = merge_dicts(output, cls.__transform_single_field__(ast, field))
+
+        return output
 
 
 class LiteralTransformer(BaseJSTransformer):
@@ -52,14 +60,16 @@ class LiteralTransformer(BaseJSTransformer):
 
 
 class ArrayExpressionTransformer(BaseJSTransformer):
-    field = "elements"
+    fields = ["elements"]
 
 
 class ObjectExpressionTransformer(BaseJSTransformer):
-    field = "properties"
+    fields = ["properties"]
 
 
 class PropertyTransformer(BaseJSTransformer):
+    fields = ["value"]
+
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
         name = None
@@ -71,19 +81,9 @@ class PropertyTransformer(BaseJSTransformer):
 
         return name or super().__get_name__(ast)
 
-    @classmethod
-    def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
-        output = {}
-        name = cls.__get_name__(ast)
-
-        if ast["value"]:
-            output = JSTransformer.transform(ast["value"])
-
-        return {name: output} if name else output
-
 
 class FunctionExpressionTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -91,7 +91,7 @@ class FunctionExpressionTransformer(BaseJSTransformer):
 
 
 class ArrowFunctionExpressionTransformer(FunctionExpressionTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -99,7 +99,7 @@ class ArrowFunctionExpressionTransformer(FunctionExpressionTransformer):
 
 
 class ClassExpressionTransformer(FunctionExpressionTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -107,7 +107,7 @@ class ClassExpressionTransformer(FunctionExpressionTransformer):
 
 
 class ClassBodyTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
 
 class MethodDefinitionTransformer(PropertyTransformer):
@@ -115,23 +115,23 @@ class MethodDefinitionTransformer(PropertyTransformer):
 
 
 class CallExpressionTransformer(BaseJSTransformer):
-    field = "arguments"
+    fields = ["arguments", "callee"]
 
 
 class NewExpressionTransformer(BaseJSTransformer):
-    field = "arguments"
+    fields = ["arguments", "callee"]
 
 
 class SpreadElementTransformer(BaseJSTransformer):
-    field = "argument"
+    fields = ["argument"]
 
 
 class YieldExpressionTransformer(SpreadElementTransformer):
-    field = "argument"
+    fields = ["argument"]
 
 
 class AssignmentExpressionTransformer(BaseJSTransformer):
-    field = "right"
+    fields = ["right"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -149,7 +149,7 @@ class AssignmentExpressionTransformer(BaseJSTransformer):
 
 
 class ClassDeclarationTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -157,7 +157,7 @@ class ClassDeclarationTransformer(BaseJSTransformer):
 
 
 class FunctionDeclarationTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -165,7 +165,7 @@ class FunctionDeclarationTransformer(BaseJSTransformer):
 
 
 class VariableDeclaratorTransformer(BaseJSTransformer):
-    field = "init"
+    fields = ["init"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -173,29 +173,23 @@ class VariableDeclaratorTransformer(BaseJSTransformer):
 
 
 class VariableDeclarationTransformer(BaseJSTransformer):
-    field = "declarations"
+    fields = ["declarations"]
 
 
 class BlockStatementTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
 
 class ExpressionStatementTransformer(BaseJSTransformer):
-    field = "expression"
+    fields = ["expression"]
 
 
 class IfStatementTransformer(BaseJSTransformer):
-    @classmethod
-    def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
-        output = JSTransformer.transform(ast["consequent"])
-        if ast.get("alternate"):
-            output = merge_dicts(output, JSTransformer.transform(ast["alternate"]))
-
-        return output
+    fields = ["consequent", "alternate"]
 
 
 class LabeledStatementTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
@@ -203,11 +197,11 @@ class LabeledStatementTransformer(BaseJSTransformer):
 
 
 class SwitchStatementTransformer(BaseJSTransformer):
-    field = "cases"
+    fields = ["cases"]
 
 
 class SwitchCaseTransformer(BaseJSTransformer):
-    field = "consequent"
+    fields = ["consequent"]
 
 
 class TryStatementTransformer(BaseJSTransformer):
@@ -225,19 +219,19 @@ class TryStatementTransformer(BaseJSTransformer):
 
 
 class CatchClauseTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
 
 class WithStatementTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
 
 class ProgramTransformer(BaseJSTransformer):
-    field = "body"
+    fields = ["body"]
 
 
 class ReturnStatementTransformer(BaseJSTransformer):
-    field = "argument"
+    fields = ["argument"]
 
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
