@@ -79,3 +79,18 @@ def test_if_statement():
     script_dict = rawjs2dict.transform(script)
 
     assert script_dict == {"x": 1, "y": 2, "z": 3}
+
+
+def test_negative_literal():
+    script = """
+    return {
+        location: {
+            latitude: 43.3391455,
+            longitude: -1.7807761
+        }
+    };
+    """
+
+    script_dict = rawjs2dict.transform(script)
+
+    assert script_dict == {"return": {"location": {"latitude": 43.3391455, "longitude": -1.7807761}}}

@@ -236,3 +236,21 @@ class ReturnStatementTransformer(BaseJSTransformer):
     @classmethod
     def __get_name__(cls, ast: dict[str, Any]) -> str:
         return "return"
+
+
+class UnaryExpressionTransformer(BaseJSTransformer):
+    @classmethod
+    def transform(cls, ast: dict[str, Any]) -> dict[str, Any]:
+        if ast["argument"]["type"] == "Literal" and ast["prefix"] and ast["operator"] in ["!", "~", "-", "+"]:
+            value = JSTransformer.transform(ast["argument"])[LITERAL_VALUE]
+            if ast["operator"] == "!" and isinstance(value, bool):
+                return {LITERAL_VALUE: not value}
+            if ast["operator"] == "-" and isinstance(value, (int, float)):
+                return {LITERAL_VALUE: -value}
+            if ast["operator"] == "+" and isinstance(value, (int, float)):
+                return {LITERAL_VALUE: value}
+            if ast["operator"] == "~" and isinstance(value, int):
+                return {LITERAL_VALUE: ~value}
+
+            return {LITERAL_VALUE: value}
+        return super().transform(ast)
